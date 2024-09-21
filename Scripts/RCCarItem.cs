@@ -11,6 +11,7 @@ public class RCCarItem : PhysicsProp, IHittable
     public NavMeshAgent navMeshAgent;
 
     public List<Light> carLights;
+    public Light carVisionLight;
     public Color carLightsColor;
     public Camera carCamera;
 
@@ -29,6 +30,8 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public bool playerIsDriving;
     public bool playerIsLocal;
+
+    public float honkInterval = 1;
 
     private PlayerControllerB playerDriving;
 
@@ -87,6 +90,7 @@ public class RCCarItem : PhysicsProp, IHittable
         {
             l.color = on ? carLightsColor : Color.black;
         });
+        carVisionLight.enabled = on;
     }
 
     public void ChangeToolTips()
@@ -100,8 +104,17 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public void ChangePlayerControls(PlayerControllerB player, bool driving)
     {
-        dropPos = transform.localPosition;
+        
+        
         playerIsLocal = player.playerClientId == GameNetworkManager.Instance.localPlayerController.playerClientId;
+        
+        if (player.isInHangarShipRoom)
+        {
+            if(playerIsLocal) HUDManager.Instance.DisplayTip("Warning", "You can't drive in the ship !");
+            return;
+        }
+        
+        dropPos = transform.localPosition;
         playerIsDriving = driving;
         grabbable = !driving;
         CarLights(driving);
@@ -270,7 +283,7 @@ public class RCCarItem : PhysicsProp, IHittable
             
             float honk = IngamePlayerSettings.Instance.playerInput.actions.FindAction("ActivateItem", false).ReadValue<float>();
  
-            if (honk > 0 && honkTimer >= 1)
+            if (honk > 0 && honkTimer >= honkInterval)
             {
                 HonkOnEveryClient();
             }
@@ -309,7 +322,7 @@ public class RCCarItem : PhysicsProp, IHittable
             reachedFloorTarget = false;
             itemHeld.targetFloorPosition = itemHeldPosition.position;
             itemHeld.startFallingPosition = itemHeldPosition.position;
-            itemHeld.gameObject.transform.position = itemHeldPosition.position;
+            itemHeld.gameObject.transform.position = itemHeldPosition.position + Vector3.up * itemHeld.itemProperties.floorYOffset;
         }
         
         if(!playerIsDriving || !playerIsLocal) return;
