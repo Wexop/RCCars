@@ -122,10 +122,10 @@ public class RCCarItem : PhysicsProp, IHittable
                 player.disableLookInput = true;
                 ChangeToolTips();
             }
-            targetFloorPosition = dropPos;
-            startFallingPosition = dropPos;
-            isInShipRoom = false;
-            transform.localPosition = dropPos;
+            //targetFloorPosition = dropPos;
+            //startFallingPosition = dropPos;
+            //transform.localPosition = dropPos;
+            //isInShipRoom = false;
             parentObject = null;
             shouldBeDropPos = true;
             honkTimer = 0;
