@@ -16,6 +16,12 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public Transform itemHeldPosition;
 
+    public AudioSource SfxAudioSource;
+    public AudioSource drivingAudioSource;
+
+    public AudioClip honkAudio;
+    public AudioClip drivingLoop;
+
     public GrabbableObject itemHeld;
 
     public float speed = 0.4f;
@@ -32,6 +38,7 @@ public class RCCarItem : PhysicsProp, IHittable
     private bool shouldBeDropPos;
 
     private float interactTimer;
+    private float honkTimer;
 
 
     public override void Start()
@@ -58,10 +65,10 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public void ChangeToolTips()
     {
-        var controlsTips = new List<string>() { "[G] Leave RCCar"};
+        var controlsTips = new List<string>() { "[G] Leave RCCar", "[LMB] Honk"};
 
         if(itemHeld != null) controlsTips.Add($"[E] Drop {itemHeld.itemProperties.itemName}");
-
+        HUDManager.Instance.ClearControlTips();
         HUDManager.Instance.ChangeControlTipMultiple(controlsTips.ToArray());
     }
 
@@ -97,6 +104,7 @@ public class RCCarItem : PhysicsProp, IHittable
             transform.position = dropPos;
             parentObject = null;
             shouldBeDropPos = true;
+            honkTimer = 0;
 
         }
         else
@@ -155,9 +163,17 @@ public class RCCarItem : PhysicsProp, IHittable
         ChangeToolTips();
     }
 
+    public void Honk()
+    {
+        if(honkTimer < 1) return;
+        SfxAudioSource.clip = honkAudio;
+        SfxAudioSource.Play();
+        honkTimer = 0;
+    }
+
     public override void Update()
     {
-
+        
         if (shouldBeDropPos)
         {
             transform.position = dropPos;
@@ -173,13 +189,33 @@ public class RCCarItem : PhysicsProp, IHittable
         {
 
             interactTimer += Time.deltaTime;
+            honkTimer += Time.deltaTime;
+            
+            float honk = IngamePlayerSettings.Instance.playerInput.actions.FindAction("ActivateItem", false).ReadValue<float>();
+ 
+            if (honk > 0)
+            {
+                Honk();
+            }
             
             Vector3 velocity = IngamePlayerSettings.Instance.playerInput.actions.FindAction("Move", false).ReadValue<Vector2>();
+
+            
             if (velocity.x != 0 || velocity.y != 0)
             {
                 
+                if(!drivingAudioSource.isPlaying)
+                {
+                    drivingAudioSource.clip = drivingLoop;
+                    drivingAudioSource.Play();
+                }
+                
                 if(velocity.y > 0) navMeshAgent.Move(transform.forward * speed);
                 transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + velocity.x * 5, 0);
+            }
+            else
+            {
+                drivingAudioSource.Stop();
             }
 
         }
