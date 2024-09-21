@@ -131,4 +131,20 @@ public class RCCarNetwork
         car.rcCarItem.SyncPositionClient(pos);
         
     }
+    
+    [ServerRpc]
+    public static void SetCarHealthServerRpc(ulong networkId, int health)
+    {
+        SetCarHealthClientRpc(networkId, health);
+    }
+    
+    [ClientRpc]
+    public static void SetCarHealthClientRpc(ulong networkId, int health)
+    {
+        var car = GetRegistredCar(networkId);
+        if(car == null) return;
+        
+        car.rcCarItem.SetNewHealth(health);
+        
+    }
 }

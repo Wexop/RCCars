@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using GameNetcodeStuff;
 using UnityEngine;
 using UnityEngine.AI;
@@ -20,6 +21,8 @@ public class RCCarItem : PhysicsProp, IHittable
     public AudioSource SfxAudioSource;
     public AudioSource drivingAudioSource;
 
+    public GameObject carBody;
+
     public AudioClip honkAudio;
     public AudioClip drivingLoop;
 
@@ -33,6 +36,13 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public float honkInterval = 1;
     public float rotationSpeed = 10;
+
+    public int MaxHealth = 2;
+    public int Health = 2;
+    public ParticleSystem smokeParticules;
+    public ParticleSystem explosion;
+    public AudioClip explosionAudio;
+    public float explosionRange;
 
     private PlayerControllerB playerDriving;
 
@@ -50,6 +60,7 @@ public class RCCarItem : PhysicsProp, IHittable
     private float interactTimer;
     private float honkTimer;
     private float posSyncTimer;
+    private float hitTimer;
     
     
 
@@ -177,6 +188,7 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public void OnStopUsingCar(Vector3 pos)
     {
+        if(!playerDriving) return;
         transform.position = pos;
         if(playerIsLocal) ChangePlayerControls(GameNetworkManager.Instance.localPlayerController, false);
         else ChangePlayerControls(playerDriving, false);
@@ -248,7 +260,7 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public override void Update()
     {
-
+        hitTimer += Time.deltaTime;
         if (playerDriving && !playerIsLocal)
         {
             carIsMoving = !navMeshAgent.velocity.Equals(Vector3.zero);
@@ -375,10 +387,43 @@ public class RCCarItem : PhysicsProp, IHittable
         
     }
 
+    public void SetNewHealth(int health)
+    {
+        Health = health;
+        if (Health < MaxHealth)
+        {
+            if(!smokeParticules.isPlaying) smokeParticules.Play();
+        }
+
+        if (Health <= 0)
+        {
+            explosion.Play();
+            SfxAudioSource.PlayOneShot(explosionAudio);
+            RCCarNetwork.StopUseCarServerRpc(NetworkObjectId, transform.position);
+            if (Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position,
+                    transform.position) <= explosionRange)
+            {
+                GameNetworkManager.Instance.localPlayerController.DamagePlayer(50);
+            }
+            StartCoroutine(DestroyObject());
+        }
+    }
+
+    public IEnumerator DestroyObject()
+    {
+        carBody.SetActive(false);
+        yield return new WaitForSeconds(1f);
+        if(IsServer) Destroy(gameObject);
+    }
+
     public bool Hit(int force, Vector3 hitDirection, PlayerControllerB playerWhoHit = null, bool playHitSFX = false,
         int hitID = -1)
     {
-        Debug.Log("HIT");
+        if (hitTimer >= 0.2f)
+        {
+            hitTimer = 0;
+            RCCarNetwork.SetCarHealthServerRpc(NetworkObjectId, Health - force);
+        }
         return true;
     }
 }
