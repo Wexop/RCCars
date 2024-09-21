@@ -32,6 +32,7 @@ public class RCCarItem : PhysicsProp, IHittable
     public bool playerIsLocal;
 
     public float honkInterval = 1;
+    public float rotationSpeed = 5;
 
     private PlayerControllerB playerDriving;
 
@@ -135,12 +136,8 @@ public class RCCarItem : PhysicsProp, IHittable
                 player.disableLookInput = true;
                 ChangeToolTips();
             }
-            //targetFloorPosition = dropPos;
-            //startFallingPosition = dropPos;
-            //transform.localPosition = dropPos;
-            //isInShipRoom = false;
+            targetFloorPosition = GetItemFloorPosition(transform.localPosition);;
             parentObject = null;
-            shouldBeDropPos = true;
             honkTimer = 0;
             playerDriving = player;
 
@@ -198,7 +195,6 @@ public class RCCarItem : PhysicsProp, IHittable
         
         if(!playerHeldBy) return;
         
-        CarLights(true);
         ChangePlayerControls(playerHeldBy, true);
  
     }
@@ -300,7 +296,7 @@ public class RCCarItem : PhysicsProp, IHittable
                 }
                 
                 if(velocity.y > 0) navMeshAgent.Move(transform.forward * speed);
-                transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + velocity.x * 5, 0);
+                transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + velocity.x * rotationSpeed, 0);
             }
             else
             {
