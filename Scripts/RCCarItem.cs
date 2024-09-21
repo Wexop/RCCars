@@ -100,7 +100,7 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public void ChangePlayerControls(PlayerControllerB player, bool driving)
     {
-        dropPos = transform.position;
+        dropPos = transform.localPosition;
         playerIsLocal = player.playerClientId == GameNetworkManager.Instance.localPlayerController.playerClientId;
         playerIsDriving = driving;
         grabbable = !driving;
@@ -125,7 +125,7 @@ public class RCCarItem : PhysicsProp, IHittable
             targetFloorPosition = dropPos;
             startFallingPosition = dropPos;
             isInShipRoom = false;
-            transform.position = dropPos;
+            transform.localPosition = dropPos;
             parentObject = null;
             shouldBeDropPos = true;
             honkTimer = 0;
@@ -144,12 +144,13 @@ public class RCCarItem : PhysicsProp, IHittable
             }
             parentObject = null;
             
-            transform.position = dropPos + Vector3.up * 3;
-            targetFloorPosition = transform.position;
-            startFallingPosition = transform.position;
             reachedFloorTarget = false;
-            
+            transform.localPosition = dropPos;
+            startFallingPosition = dropPos;
             FallToGround();
+            grabbable = true;
+            
+
             DropHeldItem();
             drivingAudioSource.Stop();
             playerIsLocal = false;
@@ -157,8 +158,9 @@ public class RCCarItem : PhysicsProp, IHittable
         
     }
 
-    public void OnStopUsingCar()
+    public void OnStopUsingCar(Vector3 pos)
     {
+        transform.position = pos;
         if(playerIsLocal) ChangePlayerControls(GameNetworkManager.Instance.localPlayerController, false);
         else ChangePlayerControls(playerDriving, false);
     }
@@ -209,7 +211,7 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public void SyncPositionClient(Vector3 pos)
     {
-        if (playerDriving && !playerIsLocal)
+        if (playerDriving && !playerIsLocal && navMeshAgent.enabled)
         {
             navMeshAgent.SetDestination(pos);
         }
@@ -232,16 +234,18 @@ public class RCCarItem : PhysicsProp, IHittable
 
         if (playerDriving && !playerIsLocal)
         {
-            if (carIsMoving != lastFrameCarIsMoving)
+            carIsMoving = !navMeshAgent.velocity.Equals(Vector3.zero);
+            if(carIsMoving != lastFrameCarIsMoving)
             {
+                lastFrameCarIsMoving = carIsMoving;
                 if(!carIsMoving)
                 {
-                    drivingAudioSource.clip = drivingLoop;
-                    drivingAudioSource.Play();
+                    drivingAudioSource.Stop();
                 }
                 else
                 {
-                    drivingAudioSource.Stop();
+                    drivingAudioSource.clip = drivingLoop;
+                    drivingAudioSource.Play();
                 }
             }
         }
@@ -276,7 +280,6 @@ public class RCCarItem : PhysicsProp, IHittable
             
             if (velocity.x != 0 || velocity.y != 0)
             {
-                carIsMoving = true;
                 if(!drivingAudioSource.isPlaying)
                 {
                     drivingAudioSource.clip = drivingLoop;
@@ -288,7 +291,6 @@ public class RCCarItem : PhysicsProp, IHittable
             }
             else
             {
-                carIsMoving = false;
                 drivingAudioSource.Stop();
             }
 
@@ -326,7 +328,7 @@ public class RCCarItem : PhysicsProp, IHittable
             
         if (drop > 0)
         {
-            RCCarNetwork.StopUseCarServerRpc(NetworkObjectId);
+            RCCarNetwork.StopUseCarServerRpc(NetworkObjectId, transform.position);
         }
 
         interactRay = new Ray(transform.position, transform.forward);

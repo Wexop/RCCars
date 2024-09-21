@@ -50,18 +50,18 @@ public class RCCarNetwork
     }
     
     [ServerRpc]
-    public static void StopUseCarServerRpc(ulong networkId)
+    public static void StopUseCarServerRpc(ulong networkId,Vector3 pos)
     {
-        StopUseCarClientRpc(networkId);
+        StopUseCarClientRpc(networkId, pos);
     }
     
     [ClientRpc]
-    public static void StopUseCarClientRpc(ulong networkId)
+    public static void StopUseCarClientRpc(ulong networkId, Vector3 pos)
     {
         var car = GetRegistredCar(networkId);
         if(car == null) return;
         
-        car.rcCarItem.OnStopUsingCar();
+        car.rcCarItem.OnStopUsingCar(pos);
         
     }
     
