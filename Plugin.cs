@@ -41,7 +41,7 @@ namespace RCCars
 
         void RegisterCar(AssetBundle bundle)
         {
-            //colorfulJar
+            //NormalCar
             Item carAsset =
                 bundle.LoadAsset<Item>("Assets/LethalCompany/Mods/RCCars/RCCar.asset");
             Logger.LogInfo($"{carAsset.name} FOUND");
@@ -49,7 +49,17 @@ namespace RCCars
             NetworkPrefabs.RegisterNetworkPrefab(carAsset.spawnPrefab);
             Utilities.FixMixerGroups(carAsset.spawnPrefab);
             Items.RegisterItem(carAsset);
-            Items.RegisterShopItem(carAsset, price: 50);
+            Items.RegisterShopItem(carAsset, price: 100);
+            
+            //NormalCar
+            Item policeCarAsset =
+                bundle.LoadAsset<Item>("Assets/LethalCompany/Mods/RCCars/RCCarPolice.asset");
+            Logger.LogInfo($"{policeCarAsset.name} FOUND");
+            Logger.LogInfo($"{policeCarAsset.spawnPrefab} prefab");
+            NetworkPrefabs.RegisterNetworkPrefab(policeCarAsset.spawnPrefab);
+            Utilities.FixMixerGroups(policeCarAsset.spawnPrefab);
+            Items.RegisterItem(policeCarAsset);
+            Items.RegisterShopItem(policeCarAsset, price: 150);
         }
 
 

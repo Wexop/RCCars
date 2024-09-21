@@ -211,7 +211,7 @@ public class RCCarItem : PhysicsProp, IHittable
     {
         RCCarNetwork.CarHonkServerRpc(NetworkObjectId);
     }
-    public void Honk()
+    public virtual void Honk()
     {
         SfxAudioSource.clip = honkAudio;
         SfxAudioSource.Play();
