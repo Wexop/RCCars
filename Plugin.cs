@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -7,12 +8,12 @@ using LethalConfig.ConfigItems;
 using LethalConfig.ConfigItems.Options;
 using LethalLevelLoader;
 using LethalLib.Modules;
+using RCCars.Scripts;
 using UnityEngine;
 
 namespace RCCars
 {
     [BepInDependency(StaticNetcodeLib.StaticNetcodeLib.Guid)]
-    [BepInDependency("LethalNetworkAPI")]
     [BepInPlugin(GUID, NAME, VERSION)]
     public class RCCarsPlugin : BaseUnityPlugin
     {
@@ -21,6 +22,8 @@ namespace RCCars
         private const string VERSION = "1.0.0";
 
         public static RCCarsPlugin instance;
+
+        public Dictionary<ulong, RegistredCar> RegistredCars = new Dictionary<ulong, RegistredCar>();
 
         private void Awake()
         {

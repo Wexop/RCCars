@@ -29,6 +29,8 @@ public class RCCarItem : PhysicsProp, IHittable
     public bool playerIsDriving;
     public bool playerIsLocal;
 
+    private PlayerControllerB playerDriving;
+
     private Camera playerCamera;
     
     private Ray interactRay;
@@ -40,6 +42,21 @@ public class RCCarItem : PhysicsProp, IHittable
     private float interactTimer;
     private float honkTimer;
 
+    public void RegisterCar()
+    {
+        if (RCCarsPlugin.instance.RegistredCars.ContainsKey(NetworkObjectId))
+        {
+            RCCarsPlugin.instance.RegistredCars.Remove(NetworkObjectId);
+        }
+
+        RegistredCar registredCar = new RegistredCar();
+        registredCar.networkObjectId = NetworkObjectId;
+        registredCar.rcCarItem = this;
+        
+        RCCarsPlugin.instance.RegistredCars.Add(NetworkObjectId, registredCar);
+
+    }
+
 
     public override void Start()
     {
@@ -47,6 +64,7 @@ public class RCCarItem : PhysicsProp, IHittable
         EnableCamera(false);
         CarLights(false);
         navMeshAgent.enabled = false;
+        RegisterCar();
 
     }
 
@@ -80,8 +98,6 @@ public class RCCarItem : PhysicsProp, IHittable
         grabbable = !driving;
         CarLights(driving);
         
-        
-        
         rigidbody.useGravity = driving;
         navMeshAgent.enabled = driving;
 
@@ -105,6 +121,7 @@ public class RCCarItem : PhysicsProp, IHittable
             parentObject = null;
             shouldBeDropPos = true;
             honkTimer = 0;
+            playerDriving = player;
 
         }
         else
@@ -123,11 +140,17 @@ public class RCCarItem : PhysicsProp, IHittable
             startFallingPosition = transform.position;
             reachedFloorTarget = false;
             transform.position = dropPos;
+            drivingAudioSource.Stop();
             FallToGround();
             DropHeldItem();
-            
         }
         
+    }
+
+    public void OnStopUsingCar()
+    {
+        if(playerIsLocal) ChangePlayerControls(GameNetworkManager.Instance.localPlayerController, false);
+        else ChangePlayerControls(playerDriving, false);
     }
 
     public void DropHeldItem()
@@ -163,9 +186,12 @@ public class RCCarItem : PhysicsProp, IHittable
         ChangeToolTips();
     }
 
+    public void HonkOnEveryClient()
+    {
+        RCCarNetwork.CarHonkServerRpc(NetworkObjectId);
+    }
     public void Honk()
     {
-        if(honkTimer < 1) return;
         SfxAudioSource.clip = honkAudio;
         SfxAudioSource.Play();
         honkTimer = 0;
@@ -193,9 +219,9 @@ public class RCCarItem : PhysicsProp, IHittable
             
             float honk = IngamePlayerSettings.Instance.playerInput.actions.FindAction("ActivateItem", false).ReadValue<float>();
  
-            if (honk > 0)
+            if (honk > 0 && honkTimer >= 1)
             {
-                Honk();
+                HonkOnEveryClient();
             }
             
             Vector3 velocity = IngamePlayerSettings.Instance.playerInput.actions.FindAction("Move", false).ReadValue<Vector2>();
@@ -252,7 +278,7 @@ public class RCCarItem : PhysicsProp, IHittable
             
         if (drop > 0)
         {
-            ChangePlayerControls(GameNetworkManager.Instance.localPlayerController, false);
+            RCCarNetwork.StopUseCarServerRpc(NetworkObjectId);
         }
 
         interactRay = new Ray(transform.position, transform.forward);
