@@ -68,6 +68,12 @@ public class RCCarItem : PhysicsProp, IHittable
 
     }
 
+    public void RefreshPluginValues()
+    {
+        drivingAudioSource.volume = RCCarsPlugin.instance.engineVolume.Value;
+        SfxAudioSource.volume = RCCarsPlugin.instance.honkVolume.Value;
+        rotationSpeed = RCCarsPlugin.instance.rotationSpeed.Value;
+    }
 
     public override void Start()
     {
@@ -77,6 +83,7 @@ public class RCCarItem : PhysicsProp, IHittable
         navMeshAgent.speed = 30;
         navMeshAgent.enabled = false;
         RegisterCar();
+        RefreshPluginValues();
 
     }
 
@@ -106,7 +113,7 @@ public class RCCarItem : PhysicsProp, IHittable
     public void ChangePlayerControls(PlayerControllerB player, bool driving)
     {
         
-        
+        RefreshPluginValues();
         playerIsLocal = player.playerClientId == GameNetworkManager.Instance.localPlayerController.playerClientId;
         
         if (player.isInHangarShipRoom)
@@ -213,6 +220,7 @@ public class RCCarItem : PhysicsProp, IHittable
     }
     public virtual void Honk()
     {
+        RefreshPluginValues();
         SfxAudioSource.clip = honkAudio;
         SfxAudioSource.Play();
         honkTimer = 0;

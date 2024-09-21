@@ -25,6 +25,13 @@ namespace RCCars
 
         public Dictionary<ulong, RegistredCar> RegistredCars = new Dictionary<ulong, RegistredCar>();
 
+        public ConfigEntry<float> honkVolume;
+        public ConfigEntry<float> engineVolume;
+        public ConfigEntry<float> rotationSpeed;
+        
+        public ConfigEntry<int> carPrice;
+        public ConfigEntry<int> policeCarPrice;
+
         private void Awake()
         {
             instance = this;
@@ -33,6 +40,7 @@ namespace RCCars
             
             string assetDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "rccars");
             AssetBundle bundle = AssetBundle.LoadFromFile(assetDir);
+            LoadConfigs();
             RegisterCar(bundle);
 
 
@@ -49,7 +57,7 @@ namespace RCCars
             NetworkPrefabs.RegisterNetworkPrefab(carAsset.spawnPrefab);
             Utilities.FixMixerGroups(carAsset.spawnPrefab);
             Items.RegisterItem(carAsset);
-            Items.RegisterShopItem(carAsset, price: 100);
+            Items.RegisterShopItem(carAsset, price: instance.carPrice.Value);
             
             //NormalCar
             Item policeCarAsset =
@@ -59,14 +67,64 @@ namespace RCCars
             NetworkPrefabs.RegisterNetworkPrefab(policeCarAsset.spawnPrefab);
             Utilities.FixMixerGroups(policeCarAsset.spawnPrefab);
             Items.RegisterItem(policeCarAsset);
-            Items.RegisterShopItem(policeCarAsset, price: 150);
+            Items.RegisterShopItem(policeCarAsset, price: instance.policeCarPrice.Value);
         }
 
+        public void LoadConfigs()
+        {
+            honkVolume = Config.Bind(
+                "General", "honkVolume", 
+                1f, 
+                "Honk volume. No need to restart the game :)"
+                );
+            CreateFloatConfig(honkVolume,0f, 2f);
+            
+            engineVolume = Config.Bind(
+                "General", "engineVolume", 
+                0.2f, 
+                "Engine volume. No need to restart the game :)"
+                );
+            CreateFloatConfig(engineVolume,0f, 2f);
+            
+            rotationSpeed = Config.Bind(
+                "General", "rotationSpeed", 
+                7f, 
+                "Cars rotation speed. No need to restart the game :)"
+                );
+            CreateFloatConfig(rotationSpeed,0f, 200f);
+            
+            //PRICE
+            
+            carPrice = Config.Bind(
+                "Price", "carPrice", 
+                100, 
+                "Car price. No need to restart the game :)"
+                );
+            CreateIntConfig(carPrice,0, 1000);
+            
+            policeCarPrice = Config.Bind(
+                "Price", "policeCarPrice", 
+                150, 
+                "Police car price. No need to restart the game :)"
+                );
+            CreateIntConfig(policeCarPrice,0, 1000);
+            
+        }
 
-
-        private void CreateFloatConfig(ConfigEntry<float> configEntry, float min = 0f, float max = 30f)
+        private void CreateFloatConfig(ConfigEntry<float> configEntry, float min = 0f, float max = 100f)
         {
             var exampleSlider = new FloatSliderConfigItem(configEntry, new FloatSliderOptions
+            {
+                Min = min,
+                Max = max,
+                RequiresRestart = false
+            });
+            LethalConfigManager.AddConfigItem(exampleSlider);
+        }
+
+        private void CreateIntConfig(ConfigEntry<int> configEntry, int min = 0, int max = 100)
+        {
+            var exampleSlider = new IntSliderConfigItem(configEntry, new IntSliderOptions()
             {
                 Min = min,
                 Max = max,
