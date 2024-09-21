@@ -25,6 +25,7 @@ public class RCCarItem : PhysicsProp, IHittable
     public GrabbableObject itemHeld;
 
     public float speed = 0.4f;
+    public float syncInterval = 0.5f;
 
     public bool playerIsDriving;
     public bool playerIsLocal;
@@ -39,8 +40,14 @@ public class RCCarItem : PhysicsProp, IHittable
 
     private bool shouldBeDropPos;
 
+    private bool carIsMoving;
+    private bool lastFrameCarIsMoving;
+
     private float interactTimer;
     private float honkTimer;
+    private float posSyncTimer;
+    
+    
 
     public void RegisterCar()
     {
@@ -63,6 +70,7 @@ public class RCCarItem : PhysicsProp, IHittable
         base.Start();
         EnableCamera(false);
         CarLights(false);
+        navMeshAgent.speed = 30;
         navMeshAgent.enabled = false;
         RegisterCar();
 
@@ -126,7 +134,6 @@ public class RCCarItem : PhysicsProp, IHittable
         }
         else
         {
-
             if (playerIsLocal)
             {
                 EnableCamera(false);
@@ -135,14 +142,17 @@ public class RCCarItem : PhysicsProp, IHittable
                 player.disableLookInput = false;
                 HUDManager.Instance.ClearControlTips();
             }
+            parentObject = null;
             
+            transform.position = dropPos + Vector3.up * 3;
             targetFloorPosition = transform.position;
             startFallingPosition = transform.position;
             reachedFloorTarget = false;
-            transform.position = dropPos;
-            drivingAudioSource.Stop();
+            
             FallToGround();
             DropHeldItem();
+            drivingAudioSource.Stop();
+            playerIsLocal = false;
         }
         
     }
@@ -157,7 +167,7 @@ public class RCCarItem : PhysicsProp, IHittable
     {
         if(itemHeld == null) return;
         itemHeld.reachedFloorTarget = false;
-        itemHeld.transform.position = transform.position;
+        itemHeld.transform.position = itemHeld.transform.position;
         itemHeld.targetFloorPosition = itemHeld.transform.position;
         itemHeld.startFallingPosition = itemHeld.transform.position;
         itemHeld.FallToGround();
@@ -197,8 +207,44 @@ public class RCCarItem : PhysicsProp, IHittable
         honkTimer = 0;
     }
 
+    public void SyncPositionClient(Vector3 pos)
+    {
+        if (playerDriving && !playerIsLocal)
+        {
+            navMeshAgent.SetDestination(pos);
+        }
+    }
+
+    public void StopDrivingSoundClient(bool turnOff)
+    {
+        if (turnOff)
+        {
+            drivingAudioSource.Stop();
+        }
+        else
+        {
+            drivingAudioSource.Play();
+        }
+    }
+
     public override void Update()
     {
+
+        if (playerDriving && !playerIsLocal)
+        {
+            if (carIsMoving != lastFrameCarIsMoving)
+            {
+                if(!carIsMoving)
+                {
+                    drivingAudioSource.clip = drivingLoop;
+                    drivingAudioSource.Play();
+                }
+                else
+                {
+                    drivingAudioSource.Stop();
+                }
+            }
+        }
         
         if (shouldBeDropPos)
         {
@@ -216,6 +262,7 @@ public class RCCarItem : PhysicsProp, IHittable
 
             interactTimer += Time.deltaTime;
             honkTimer += Time.deltaTime;
+            posSyncTimer += Time.deltaTime;
             
             float honk = IngamePlayerSettings.Instance.playerInput.actions.FindAction("ActivateItem", false).ReadValue<float>();
  
@@ -229,7 +276,7 @@ public class RCCarItem : PhysicsProp, IHittable
             
             if (velocity.x != 0 || velocity.y != 0)
             {
-                
+                carIsMoving = true;
                 if(!drivingAudioSource.isPlaying)
                 {
                     drivingAudioSource.clip = drivingLoop;
@@ -241,6 +288,7 @@ public class RCCarItem : PhysicsProp, IHittable
             }
             else
             {
+                carIsMoving = false;
                 drivingAudioSource.Stop();
             }
 
@@ -269,7 +317,7 @@ public class RCCarItem : PhysicsProp, IHittable
         if (interact > 0 && itemHeld != null && interactTimer >= 1)
         {
             interactTimer = 0;
-            DropHeldItem();
+            RCCarNetwork.CarDropItemServerRpc(NetworkObjectId);
             ChangeToolTips();
         }
         
@@ -292,9 +340,16 @@ public class RCCarItem : PhysicsProp, IHittable
             if (interact > 0)
             {
                 interactTimer = 0;
-                GrabItem(component);
+                RCCarNetwork.CarGrabItemServerRpc(NetworkObjectId, component.NetworkObjectId);
             }
         }
+
+        if (posSyncTimer >= syncInterval)
+        {
+            posSyncTimer = 0;
+            RCCarNetwork.SyncCarPositionServerRpc(NetworkObjectId, transform.position);
+        }
+        
     }
 
     public bool Hit(int force, Vector3 hitDirection, PlayerControllerB playerWhoHit = null, bool playHitSFX = false,

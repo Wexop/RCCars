@@ -1,4 +1,5 @@
-﻿using StaticNetcodeLib;
+﻿using System.Linq;
+using StaticNetcodeLib;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -20,6 +21,16 @@ public class RCCarNetwork
         if(registredCar == null) Debug.LogError($"COULD NOT FOUND CAR WITH ID {networkId}");
 
         return registredCar;
+    }
+    public static GrabbableObject GetItem(ulong networkId)
+    {
+        
+        var items = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None).ToList();
+        var itemFound = items.Find(e => e.NetworkObjectId == networkId);
+        
+        if(itemFound == null) Debug.LogError($"COULD NOT FOUND ITEM WITH ID {networkId}");
+
+        return itemFound;
     }
     
     [ServerRpc]
@@ -51,6 +62,73 @@ public class RCCarNetwork
         if(car == null) return;
         
         car.rcCarItem.OnStopUsingCar();
+        
+    }
+    
+    [ServerRpc]
+    public static void UpdateDrivingSoundServerRpc(ulong networkId, bool value)
+    {
+        UpdateDrivingSoundClientRpc(networkId, value);
+    }
+    
+    [ClientRpc]
+    public static void UpdateDrivingSoundClientRpc(ulong networkId, bool value)
+    {
+        var car = GetRegistredCar(networkId);
+        if(car == null) return;
+        
+        car.rcCarItem.StopDrivingSoundClient(value);
+        
+    }
+    
+    [ServerRpc]
+    public static void CarGrabItemServerRpc(ulong networkId, ulong itemNetworkId)
+    {
+        CarGrabItemClientRpc(networkId, itemNetworkId);
+    }
+    
+    [ClientRpc]
+    public static void CarGrabItemClientRpc(ulong networkId, ulong itemNetworkId)
+    {
+        var car = GetRegistredCar(networkId);
+        if(car == null) return;
+
+        var item = GetItem(itemNetworkId);
+        if(item == null) return;
+        
+        car.rcCarItem.GrabItem(item);
+        
+    }
+    
+    [ServerRpc]
+    public static void CarDropItemServerRpc(ulong networkId)
+    {
+        CarDropItemClientRpc(networkId);
+    }
+    
+    [ClientRpc]
+    public static void CarDropItemClientRpc(ulong networkId)
+    {
+        var car = GetRegistredCar(networkId);
+        if(car == null) return;
+        
+        car.rcCarItem.DropHeldItem();
+        
+    }
+    
+    [ServerRpc]
+    public static void SyncCarPositionServerRpc(ulong networkId, Vector3 pos)
+    {
+        SyncCarPositionClientRpc(networkId, pos);
+    }
+    
+    [ClientRpc]
+    public static void SyncCarPositionClientRpc(ulong networkId, Vector3 pos)
+    {
+        var car = GetRegistredCar(networkId);
+        if(car == null) return;
+        
+        car.rcCarItem.SyncPositionClient(pos);
         
     }
 }
