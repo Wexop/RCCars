@@ -15,6 +15,12 @@ public class RCPoliceCarItem : RCCarItem
 
     private float blueLightsInterval = 0.5f;
 
+    public override void Start()
+    {
+        TurnOffBlueLights();
+        base.Start();
+    }
+
     public void SwitchBlueLights()
     {
         blueLights[0].enabled = actualBlueLightEnabled == 1;
@@ -32,7 +38,7 @@ public class RCPoliceCarItem : RCCarItem
     public IEnumerator RunBlueLightsAnimation()
     {
         blueLightsAnimationRunning = true;
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(10f);
         blueLightsAnimationRunning = false;
         TurnOffBlueLights();
     }

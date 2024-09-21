@@ -32,7 +32,7 @@ public class RCCarItem : PhysicsProp, IHittable
     public bool playerIsLocal;
 
     public float honkInterval = 1;
-    public float rotationSpeed = 5;
+    public float rotationSpeed = 10;
 
     private PlayerControllerB playerDriving;
 
@@ -138,7 +138,7 @@ public class RCCarItem : PhysicsProp, IHittable
             }
             targetFloorPosition = GetItemFloorPosition(transform.localPosition);;
             parentObject = null;
-            honkTimer = 0;
+            honkTimer = honkInterval - 1f;
             playerDriving = player;
 
         }
@@ -270,6 +270,10 @@ public class RCCarItem : PhysicsProp, IHittable
             base.Update();
         }
         if(!playerIsDriving || !playerIsLocal) return;
+        if (playerDriving.isPlayerDead)
+        {
+            RCCarNetwork.StopUseCarServerRpc(NetworkObjectId, transform.position);
+        }
         if (playerIsDriving )
         {
 
