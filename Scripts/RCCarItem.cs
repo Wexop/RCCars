@@ -127,6 +127,17 @@ public class RCCarItem : PhysicsProp, IHittable
         HUDManager.Instance.ChangeControlTipMultiple(controlsTips.ToArray());
     }
 
+    public IEnumerator SetPlayerBack(PlayerControllerB player)
+    {
+        yield return new WaitForSeconds(Health <= 0 ? 0.8f : 0f);
+        EnableCamera(false);
+        if(playerCamera != null) player.gameplayCamera = playerCamera;
+        player.disableMoveInput = false;
+        player.disableLookInput = false;
+        player.disableInteract = false;
+        HUDManager.Instance.ClearControlTips();
+    }
+
     public void ChangePlayerControls(PlayerControllerB player, bool driving)
     {
         
@@ -181,12 +192,7 @@ public class RCCarItem : PhysicsProp, IHittable
         {
             if (playerIsLocal)
             {
-                EnableCamera(false);
-                if(playerCamera != null) player.gameplayCamera = playerCamera;
-                player.disableMoveInput = false;
-                player.disableLookInput = false;
-                player.disableInteract = false;
-                HUDManager.Instance.ClearControlTips();
+                StartCoroutine(SetPlayerBack(player));
             }
             parentObject = null;
             playerText.text = "";
