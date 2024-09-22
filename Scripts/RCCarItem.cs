@@ -417,6 +417,7 @@ public class RCCarItem : PhysicsProp, IHittable
     {
         carBody.SetActive(false);
         yield return new WaitForSeconds(1f);
+        RCCarsPlugin.instance.RegistredCars.Remove(NetworkObjectId);
         if(IsServer) Destroy(gameObject);
     }
 
