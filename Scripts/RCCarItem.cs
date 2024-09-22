@@ -394,13 +394,17 @@ public class RCCarItem : PhysicsProp, IHittable
         {
 
             GrabbableObject component = hit.collider.gameObject.GetComponent<GrabbableObject>();
-            GameNetworkManager.Instance.localPlayerController.cursorTip.text = "Grab : [E]";
-
-            if (interact > 0)
+            if (component.grabbable)
             {
-                interactTimer = 0;
-                RCCarNetwork.CarGrabItemServerRpc(NetworkObjectId, component.NetworkObjectId);
+                GameNetworkManager.Instance.localPlayerController.cursorTip.text = "Grab : [E]";
+
+                if (interact > 0)
+                {
+                    interactTimer = 0;
+                    RCCarNetwork.CarGrabItemServerRpc(NetworkObjectId, component.NetworkObjectId);
+                }
             }
+
         }
 
         if (posSyncTimer >= syncInterval)
@@ -437,6 +441,19 @@ public class RCCarItem : PhysicsProp, IHittable
                         transform.position) <= explosionRange)
                 {
                     enemy.HitEnemy(3);
+                }
+            });
+            
+            List<RCCarItem> rcCarItemsClose = FindObjectsOfType<RCCarItem>().ToList();
+            rcCarItemsClose.ForEach(car =>
+            {
+                if (car.NetworkObjectId != NetworkObjectId && car.Health > 0)
+                {
+                    if (Vector3.Distance(car.transform.position,
+                            transform.position) <= explosionRange)
+                    {
+                        if(IsServer) RCCarNetwork.SetCarHealthServerRpc(car.NetworkObjectId, car.Health - 2);
+                    }
                 }
             });
             

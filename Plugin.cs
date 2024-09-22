@@ -35,6 +35,7 @@ namespace RCCars
         public ConfigEntry<int> ambulanceCarPrice;
         public ConfigEntry<int> sportCarPrice;
         public ConfigEntry<int> bombCarPrice;
+        public ConfigEntry<int> cruiserCarPrice;
 
         private void Awake()
         {
@@ -102,6 +103,16 @@ namespace RCCars
             Utilities.FixMixerGroups(bombCar.spawnPrefab);
             Items.RegisterItem(bombCar);
             Items.RegisterShopItem(bombCar, price: instance.bombCarPrice.Value);
+            
+            //CruiserCar
+            Item cruiserCar =
+                bundle.LoadAsset<Item>("Assets/LethalCompany/Mods/RCCars/RCCruiserCar.asset");
+            Logger.LogInfo($"{cruiserCar.name} FOUND");
+            Logger.LogInfo($"{cruiserCar.spawnPrefab} prefab");
+            NetworkPrefabs.RegisterNetworkPrefab(cruiserCar.spawnPrefab);
+            Utilities.FixMixerGroups(cruiserCar.spawnPrefab);
+            Items.RegisterItem(cruiserCar);
+            Items.RegisterShopItem(cruiserCar, price: instance.cruiserCarPrice.Value);
         }
 
         public void LoadConfigs()
@@ -152,35 +163,42 @@ namespace RCCars
                 100, 
                 "Normal car price. You need to restart the game."
                 );
-            CreateIntConfig(carPrice,0, 1000);
+            CreateIntConfig(carPrice,0, 1000, true);
             
             policeCarPrice = Config.Bind(
                 "Price", "policeCarPrice", 
                 150, 
                 "Police car price. You need to restart the game."
                 );
-            CreateIntConfig(policeCarPrice,0, 1000);
+            CreateIntConfig(policeCarPrice,0, 1000, true);
             
             ambulanceCarPrice = Config.Bind(
                 "Price", "ambulanceCarPrice", 
                 175, 
                 "Ambulance car price. You need to restart the game."
                 );
-            CreateIntConfig(ambulanceCarPrice,0, 1000);
+            CreateIntConfig(ambulanceCarPrice,0, 1000, true);
             
             sportCarPrice = Config.Bind(
                 "Price", "sportCarPrice", 
                 200, 
                 "Sport car price. You need to restart the game."
                 );
-            CreateIntConfig(sportCarPrice,0, 1000);
+            CreateIntConfig(sportCarPrice,0, 1000, true);
             
             bombCarPrice = Config.Bind(
                 "Price", "bombCarPrice", 
                 75, 
                 "Bomb car price. You need to restart the game."
                 );
-            CreateIntConfig(bombCarPrice,0, 1000);
+            CreateIntConfig(bombCarPrice,0, 1000, true);
+            
+            cruiserCarPrice = Config.Bind(
+                "Price", "cruiserCarPrice", 
+                125, 
+                "Cruiser car price. You need to restart the game."
+                );
+            CreateIntConfig(cruiserCarPrice,0, 1000, true);
             
         }
 
@@ -195,13 +213,13 @@ namespace RCCars
             LethalConfigManager.AddConfigItem(exampleSlider);
         }
 
-        private void CreateIntConfig(ConfigEntry<int> configEntry, int min = 0, int max = 100)
+        private void CreateIntConfig(ConfigEntry<int> configEntry, int min = 0, int max = 100, bool restart = false)
         {
             var exampleSlider = new IntSliderConfigItem(configEntry, new IntSliderOptions()
             {
                 Min = min,
                 Max = max,
-                RequiresRestart = false
+                RequiresRestart = restart
             });
             LethalConfigManager.AddConfigItem(exampleSlider);
         }
