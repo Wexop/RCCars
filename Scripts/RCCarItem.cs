@@ -138,6 +138,12 @@ public class RCCarItem : PhysicsProp, IHittable
             return;
         }
         
+        if (RoundManager.Instance.currentLevel.PlanetName.Contains("Gordion") && driving)
+        {
+            if(playerIsLocal) HUDManager.Instance.DisplayTip("Warning", "You can't drive in company building !");
+            return;
+        }
+        
         dropPos = transform.localPosition;
         playerIsDriving = driving;
         grabbable = !driving;
