@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using GameNetcodeStuff;
 using UnityEngine;
@@ -153,6 +154,7 @@ public class RCCarItem : PhysicsProp, IHittable
                 player.gameplayCamera = carCamera;
                 player.disableMoveInput = true;
                 player.disableLookInput = true;
+                player.disableInteract = true;
                 ChangeToolTips();
             }
             targetFloorPosition = GetItemFloorPosition(transform.localPosition);;
@@ -169,6 +171,7 @@ public class RCCarItem : PhysicsProp, IHittable
                 if(playerCamera != null) player.gameplayCamera = playerCamera;
                 player.disableMoveInput = false;
                 player.disableLookInput = false;
+                player.disableInteract = false;
                 HUDManager.Instance.ClearControlTips();
             }
             parentObject = null;
