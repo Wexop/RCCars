@@ -1,0 +1,13 @@
+{
+  "name": "RCCars",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/Wexop/RCCars",
+  "description": "[V60+] Add multiple purchasable usefull remotes controlled cars",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2100",
+    "Evaisa-HookGenPatcher-0.0.5",
+    "AinaVT-LethalConfig-1.4.2",
+    "xilophor-StaticNetcodeLib-1.1.1",
+    "Evaisa-LethalLib-0.16.1"
+  ]
+}

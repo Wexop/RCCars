@@ -28,9 +28,12 @@ namespace RCCars
         public ConfigEntry<float> honkVolume;
         public ConfigEntry<float> engineVolume;
         public ConfigEntry<float> rotationSpeed;
+        public ConfigEntry<int> explosionDamage;
+        public ConfigEntry<float> syncInterval;
         
         public ConfigEntry<int> carPrice;
         public ConfigEntry<int> policeCarPrice;
+        public ConfigEntry<int> ambulanceCarPrice;
 
         private void Awake()
         {
@@ -44,7 +47,7 @@ namespace RCCars
             RegisterCar(bundle);
 
 
-            Logger.LogInfo("RCCars Patched !!");
+            Logger.LogInfo("RCCars ready !!");
         }
 
         void RegisterCar(AssetBundle bundle)
@@ -68,10 +71,22 @@ namespace RCCars
             Utilities.FixMixerGroups(policeCarAsset.spawnPrefab);
             Items.RegisterItem(policeCarAsset);
             Items.RegisterShopItem(policeCarAsset, price: instance.policeCarPrice.Value);
+            
+            //AmbulanceCar
+            Item ambulanceCarAsset =
+                bundle.LoadAsset<Item>("Assets/LethalCompany/Mods/RCCars/RCCarAmbulance.asset");
+            Logger.LogInfo($"{ambulanceCarAsset.name} FOUND");
+            Logger.LogInfo($"{ambulanceCarAsset.spawnPrefab} prefab");
+            NetworkPrefabs.RegisterNetworkPrefab(ambulanceCarAsset.spawnPrefab);
+            Utilities.FixMixerGroups(ambulanceCarAsset.spawnPrefab);
+            Items.RegisterItem(ambulanceCarAsset);
+            Items.RegisterShopItem(ambulanceCarAsset, price: instance.ambulanceCarPrice.Value);
         }
 
         public void LoadConfigs()
         {
+            
+            //GENERAL
             honkVolume = Config.Bind(
                 "General", "honkVolume", 
                 1f, 
@@ -93,21 +108,44 @@ namespace RCCars
                 );
             CreateFloatConfig(rotationSpeed,0f, 200f);
             
+            explosionDamage = Config.Bind(
+                "General", "explosionDamage", 
+                50, 
+                "Cars explosion damage on destroy. No need to restart the game :)"
+                );
+            CreateIntConfig(explosionDamage,0, 200);
+            
+            //Network
+            
+            syncInterval = Config.Bind(
+                "General", "syncInterval", 
+                0.35f, 
+                "Cars sync interval between players. No need to restart the game :)"
+            );
+            CreateFloatConfig(syncInterval,0f, 2);
+            
             //PRICE
             
             carPrice = Config.Bind(
                 "Price", "carPrice", 
                 100, 
-                "Car price. No need to restart the game :)"
+                "Car price. You need to restart the game."
                 );
             CreateIntConfig(carPrice,0, 1000);
             
             policeCarPrice = Config.Bind(
                 "Price", "policeCarPrice", 
                 150, 
-                "Police car price. No need to restart the game :)"
+                "Police car price. You need to restart the game."
                 );
             CreateIntConfig(policeCarPrice,0, 1000);
+            
+            ambulanceCarPrice = Config.Bind(
+                "Price", "ambulanceCarPrice", 
+                175, 
+                "Ambulance car price. You need to restart the game."
+                );
+            CreateIntConfig(ambulanceCarPrice,0, 1000);
             
         }
 

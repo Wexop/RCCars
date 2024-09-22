@@ -84,6 +84,7 @@ public class RCCarItem : PhysicsProp, IHittable
         drivingAudioSource.volume = RCCarsPlugin.instance.engineVolume.Value;
         SfxAudioSource.volume = RCCarsPlugin.instance.honkVolume.Value;
         rotationSpeed = RCCarsPlugin.instance.rotationSpeed.Value;
+        syncInterval = RCCarsPlugin.instance.syncInterval.Value;
     }
 
     public override void Start()
@@ -91,7 +92,7 @@ public class RCCarItem : PhysicsProp, IHittable
         base.Start();
         EnableCamera(false);
         CarLights(false);
-        navMeshAgent.speed = 30;
+        navMeshAgent.speed = 50;
         navMeshAgent.enabled = false;
         RegisterCar();
         RefreshPluginValues();
