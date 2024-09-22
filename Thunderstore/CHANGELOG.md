@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.0.3
+
+- Update README (oops)
+
 ### v1.0.2
 
 - Add RC Cruiser Car

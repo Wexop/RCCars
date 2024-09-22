@@ -14,6 +14,8 @@ This mod add multiple purchasable usefull remotes controlled cars in the game.
 - Police car
 - Ambulance car
 - Sport car
+- Cruiser car
+- Bomb car
 
 **Is there any difference between cars ?**
 
@@ -39,3 +41,5 @@ For any issue or suggestion, feel free to create an issue on the GitHub project 
 - Police car model - https://sketchfab.com/3d-models/police-car-9166b13b6ae341f4bfc093edb71d74f4
 - Ambulance car model - "Ambulance" (https://skfb.ly/oQJMR) by mk2design is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
 - Sport car model - "Generic Sport Coupé Car" (https://skfb.ly/oSwFA) by MMC Works is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+- Bomb car model - "Military Truck" (https://skfb.ly/6S7SW) by Raphael Escamilla is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+- Dynamite model - "Dynamite bundle" (https://skfb.ly/oxwGR) by DJMaesen is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
