@@ -34,6 +34,7 @@ namespace RCCars
         public ConfigEntry<int> carPrice;
         public ConfigEntry<int> policeCarPrice;
         public ConfigEntry<int> ambulanceCarPrice;
+        public ConfigEntry<int> sportCarPrice;
 
         private void Awake()
         {
@@ -81,6 +82,16 @@ namespace RCCars
             Utilities.FixMixerGroups(ambulanceCarAsset.spawnPrefab);
             Items.RegisterItem(ambulanceCarAsset);
             Items.RegisterShopItem(ambulanceCarAsset, price: instance.ambulanceCarPrice.Value);
+            
+            //SportCar
+            Item sportCarPrice =
+                bundle.LoadAsset<Item>("Assets/LethalCompany/Mods/RCCars/RCSportCar.asset");
+            Logger.LogInfo($"{sportCarPrice.name} FOUND");
+            Logger.LogInfo($"{sportCarPrice.spawnPrefab} prefab");
+            NetworkPrefabs.RegisterNetworkPrefab(sportCarPrice.spawnPrefab);
+            Utilities.FixMixerGroups(sportCarPrice.spawnPrefab);
+            Items.RegisterItem(sportCarPrice);
+            Items.RegisterShopItem(sportCarPrice, price: instance.sportCarPrice.Value);
         }
 
         public void LoadConfigs()
@@ -129,7 +140,7 @@ namespace RCCars
             carPrice = Config.Bind(
                 "Price", "carPrice", 
                 100, 
-                "Car price. You need to restart the game."
+                "Normal car price. You need to restart the game."
                 );
             CreateIntConfig(carPrice,0, 1000);
             
@@ -146,6 +157,13 @@ namespace RCCars
                 "Ambulance car price. You need to restart the game."
                 );
             CreateIntConfig(ambulanceCarPrice,0, 1000);
+            
+            sportCarPrice = Config.Bind(
+                "Price", "sportCarPrice", 
+                200, 
+                "Sport car price. You need to restart the game."
+                );
+            CreateIntConfig(sportCarPrice,0, 1000);
             
         }
 

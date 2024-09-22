@@ -128,7 +128,7 @@ public class RCCarItem : PhysicsProp, IHittable
         RefreshPluginValues();
         playerIsLocal = player.playerClientId == GameNetworkManager.Instance.localPlayerController.playerClientId;
         
-        if (player.isInHangarShipRoom)
+        if (player.isInHangarShipRoom && driving)
         {
             if(playerIsLocal) HUDManager.Instance.DisplayTip("Warning", "You can't drive in the ship !");
             return;
