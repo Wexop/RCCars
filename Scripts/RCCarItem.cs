@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using GameNetcodeStuff;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,6 +12,7 @@ public class RCCarItem : PhysicsProp, IHittable
 {
     public Rigidbody rigidbody;
     public NavMeshAgent navMeshAgent;
+    public TextMeshProUGUI playerText;
 
     public List<Light> carLights;
     public Light carVisionLight;
@@ -97,6 +99,7 @@ public class RCCarItem : PhysicsProp, IHittable
         navMeshAgent.enabled = false;
         RegisterCar();
         RefreshPluginValues();
+        playerText.text = "";
 
     }
 
@@ -157,6 +160,10 @@ public class RCCarItem : PhysicsProp, IHittable
                 player.disableInteract = true;
                 ChangeToolTips();
             }
+            else
+            {
+                playerText.text = player.playerUsername;
+            }
             targetFloorPosition = GetItemFloorPosition(transform.localPosition);;
             parentObject = null;
             honkTimer = honkInterval - 1f;
@@ -175,7 +182,7 @@ public class RCCarItem : PhysicsProp, IHittable
                 HUDManager.Instance.ClearControlTips();
             }
             parentObject = null;
-            
+            playerText.text = "";
             reachedFloorTarget = false;
             transform.localPosition = dropPos;
             startFallingPosition = dropPos;
