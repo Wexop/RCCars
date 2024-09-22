@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using GameNetcodeStuff;
 using TMPro;
 using UnityEngine;
@@ -422,6 +423,18 @@ public class RCCarItem : PhysicsProp, IHittable
             {
                 GameNetworkManager.Instance.localPlayerController.DamagePlayer(RCCarsPlugin.instance.explosionDamage.Value);
             }
+
+            List<EnemyAI> enemiesClose = FindObjectsOfType<EnemyAI>().ToList();
+            enemiesClose.ForEach(enemy =>
+            {
+                if (Vector3.Distance(enemy.transform.position,
+                        transform.position) <= explosionRange)
+                {
+                    enemy.HitEnemy(3);
+                }
+            });
+            
+            
             StartCoroutine(DestroyObject());
         }
     }

@@ -34,6 +34,7 @@ namespace RCCars
         public ConfigEntry<int> policeCarPrice;
         public ConfigEntry<int> ambulanceCarPrice;
         public ConfigEntry<int> sportCarPrice;
+        public ConfigEntry<int> bombCarPrice;
 
         private void Awake()
         {
@@ -83,14 +84,24 @@ namespace RCCars
             Items.RegisterShopItem(ambulanceCarAsset, price: instance.ambulanceCarPrice.Value);
             
             //SportCar
-            Item sportCarPrice =
+            Item sportCar =
                 bundle.LoadAsset<Item>("Assets/LethalCompany/Mods/RCCars/RCSportCar.asset");
-            Logger.LogInfo($"{sportCarPrice.name} FOUND");
-            Logger.LogInfo($"{sportCarPrice.spawnPrefab} prefab");
-            NetworkPrefabs.RegisterNetworkPrefab(sportCarPrice.spawnPrefab);
-            Utilities.FixMixerGroups(sportCarPrice.spawnPrefab);
-            Items.RegisterItem(sportCarPrice);
-            Items.RegisterShopItem(sportCarPrice, price: instance.sportCarPrice.Value);
+            Logger.LogInfo($"{sportCar.name} FOUND");
+            Logger.LogInfo($"{sportCar.spawnPrefab} prefab");
+            NetworkPrefabs.RegisterNetworkPrefab(sportCar.spawnPrefab);
+            Utilities.FixMixerGroups(sportCar.spawnPrefab);
+            Items.RegisterItem(sportCar);
+            Items.RegisterShopItem(sportCar, price: instance.sportCarPrice.Value);
+            
+            //BombCar
+            Item bombCar =
+                bundle.LoadAsset<Item>("Assets/LethalCompany/Mods/RCCars/RCCarBomb.asset");
+            Logger.LogInfo($"{bombCar.name} FOUND");
+            Logger.LogInfo($"{bombCar.spawnPrefab} prefab");
+            NetworkPrefabs.RegisterNetworkPrefab(bombCar.spawnPrefab);
+            Utilities.FixMixerGroups(bombCar.spawnPrefab);
+            Items.RegisterItem(bombCar);
+            Items.RegisterShopItem(bombCar, price: instance.bombCarPrice.Value);
         }
 
         public void LoadConfigs()
@@ -163,6 +174,13 @@ namespace RCCars
                 "Sport car price. You need to restart the game."
                 );
             CreateIntConfig(sportCarPrice,0, 1000);
+            
+            bombCarPrice = Config.Bind(
+                "Price", "bombCarPrice", 
+                75, 
+                "Bomb car price. You need to restart the game."
+                );
+            CreateIntConfig(bombCarPrice,0, 1000);
             
         }
 
