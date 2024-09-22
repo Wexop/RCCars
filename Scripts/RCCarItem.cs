@@ -323,7 +323,7 @@ public class RCCarItem : PhysicsProp, IHittable
                     drivingAudioSource.Play();
                 }
                 
-                if(velocity.y > 0) navMeshAgent.Move(transform.forward * speed);
+                if(velocity.y > 0) navMeshAgent.Move(transform.forward * speed * Time.deltaTime);
                 transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + velocity.x * rotationSpeed, 0);
             }
             else
@@ -407,7 +407,7 @@ public class RCCarItem : PhysicsProp, IHittable
             if (Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position,
                     transform.position) <= explosionRange)
             {
-                GameNetworkManager.Instance.localPlayerController.DamagePlayer(50);
+                GameNetworkManager.Instance.localPlayerController.DamagePlayer(RCCarsPlugin.instance.explosionDamage.Value);
             }
             StartCoroutine(DestroyObject());
         }
