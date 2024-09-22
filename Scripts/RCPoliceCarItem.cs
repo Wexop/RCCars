@@ -37,7 +37,6 @@ public class RCPoliceCarItem : RCCarItem
 
     public IEnumerator RunBlueLightsAnimation()
     {
-        blueLightsAnimationRunning = true;
         yield return new WaitForSeconds(10f);
         blueLightsAnimationRunning = false;
         TurnOffBlueLights();
@@ -46,6 +45,7 @@ public class RCPoliceCarItem : RCCarItem
     public override void Honk()
     {
         base.Honk();
+        blueLightsAnimationRunning = true;
         StopCoroutine(RunBlueLightsAnimation());
         StartCoroutine(RunBlueLightsAnimation());
     }
