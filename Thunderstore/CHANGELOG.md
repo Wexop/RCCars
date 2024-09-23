@@ -1,5 +1,10 @@
 # Changelog
 
+### v1.0.4
+
+- Add blacklist config
+- Add RCWexopCar, because im selfish (blacklisted by default)
+
 ### v1.0.3
 
 - Update README (oops)

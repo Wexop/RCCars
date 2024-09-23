@@ -1,6 +1,6 @@
 {
   "name": "RCCars",
-  "version_number": "1.0.3",
+  "version_number": "1.0.4",
   "website_url": "https://github.com/Wexop/RCCars",
   "description": "[V60+] Add multiple purchasable usefull remotes controlled cars",
   "dependencies": [
