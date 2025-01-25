@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.0.5
+
+- Can disable cars grabbing item (Config)
+
 ### v1.0.4
 
 - Add blacklist config

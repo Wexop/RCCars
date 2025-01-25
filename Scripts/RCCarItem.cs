@@ -394,7 +394,7 @@ public class RCCarItem : PhysicsProp, IHittable
         {
 
             GrabbableObject component = hit.collider.gameObject.GetComponent<GrabbableObject>();
-            if (component.grabbable)
+            if (component.grabbable && RCCarsPlugin.instance.carCanGrabItem.Value)
             {
                 GameNetworkManager.Instance.localPlayerController.cursorTip.text = "Grab : [E]";
 

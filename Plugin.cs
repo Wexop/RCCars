@@ -19,7 +19,7 @@ namespace RCCars
     {
         private const string GUID = "wexop.rc_cars";
         private const string NAME = "RCCars";
-        private const string VERSION = "1.0.4";
+        private const string VERSION = "1.0.5";
 
         public static RCCarsPlugin instance;
 
@@ -39,6 +39,8 @@ namespace RCCars
         public ConfigEntry<int> bombCarPrice;
         public ConfigEntry<int> cruiserCarPrice;
         public ConfigEntry<int> wexopCarPrice;
+        
+        public ConfigEntry<bool> carCanGrabItem;
 
         private void Awake()
         {
@@ -187,6 +189,13 @@ namespace RCCars
                 "Blacklist car, they will not be added into the game. You can find cars name into the terminal store. Use this config like this : RCCar,RCPoliceCar"
                 );
             CreateStringConfig(blacklistCar,true);
+            
+            carCanGrabItem = Config.Bind(
+                "General", "carCanGrabItem", 
+                true, 
+                "Blacklist car, they will not be added into the game. You can find cars name into the terminal store. Use this config like this : RCCar,RCPoliceCar"
+                );
+            CreateBoolConfig(carCanGrabItem);
             
             //Network
             
