@@ -19,7 +19,7 @@ namespace RCCars
     {
         private const string GUID = "wexop.rc_cars";
         private const string NAME = "RCCars";
-        private const string VERSION = "1.0.7";
+        private const string VERSION = "1.0.8";
 
         public static RCCarsPlugin instance;
 
