@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GameNetcodeStuff;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -68,21 +69,6 @@ public class RCCarItem : PhysicsProp, IHittable
     
     
 
-    public void RegisterCar()
-    {
-        if (RCCarsPlugin.instance.RegistredCars.ContainsKey(NetworkObjectId))
-        {
-            RCCarsPlugin.instance.RegistredCars.Remove(NetworkObjectId);
-        }
-
-        RegistredCar registredCar = new RegistredCar();
-        registredCar.networkObjectId = NetworkObjectId;
-        registredCar.rcCarItem = this;
-        
-        RCCarsPlugin.instance.RegistredCars.Add(NetworkObjectId, registredCar);
-
-    }
-
     public void RefreshPluginValues()
     {
         drivingAudioSource.volume = RCCarsPlugin.instance.engineVolume.Value;
@@ -98,7 +84,6 @@ public class RCCarItem : PhysicsProp, IHittable
         CarLights(false);
         navMeshAgent.speed = 50;
         navMeshAgent.enabled = false;
-        RegisterCar();
         RefreshPluginValues();
         playerText.text = "";
 
@@ -252,7 +237,7 @@ public class RCCarItem : PhysicsProp, IHittable
 
     public void HonkOnEveryClient()
     {
-        RCCarNetwork.CarHonkServerRpc(NetworkObjectId);
+        CarHonkServerRpc();
     }
     public virtual void Honk()
     {
@@ -316,7 +301,7 @@ public class RCCarItem : PhysicsProp, IHittable
         if(!playerIsDriving || !playerIsLocal) return;
         if (playerDriving.isPlayerDead)
         {
-            RCCarNetwork.StopUseCarServerRpc(NetworkObjectId, transform.position);
+            StopUseCarServerRpc( transform.position);
         }
         if (playerIsDriving )
         {
@@ -376,7 +361,7 @@ public class RCCarItem : PhysicsProp, IHittable
         if (interact > 0 && itemHeld != null && interactTimer >= 1)
         {
             interactTimer = 0;
-            RCCarNetwork.CarDropItemServerRpc(NetworkObjectId);
+            CarDropItemServerRpc();
             ChangeToolTips();
         }
         
@@ -385,7 +370,7 @@ public class RCCarItem : PhysicsProp, IHittable
             
         if (drop > 0)
         {
-            RCCarNetwork.StopUseCarServerRpc(NetworkObjectId, transform.position);
+            StopUseCarServerRpc( transform.position);
         }
 
         interactRay = new Ray(transform.position, transform.forward);
@@ -401,16 +386,16 @@ public class RCCarItem : PhysicsProp, IHittable
                 if (interact > 0)
                 {
                     interactTimer = 0;
-                    RCCarNetwork.CarGrabItemServerRpc(NetworkObjectId, component.NetworkObjectId);
+                    CarGrabItemServerRpc( component.NetworkObjectId);
                 }
             }
 
         }
 
-        if (posSyncTimer >= syncInterval)
+        if (posSyncTimer >= syncInterval && false)
         {
             posSyncTimer = 0;
-            RCCarNetwork.SyncCarPositionServerRpc(NetworkObjectId, transform.position);
+            SyncCarPositionServerRpc( transform.position);
         }
         
     }
@@ -427,7 +412,7 @@ public class RCCarItem : PhysicsProp, IHittable
         {
             explosion.Play();
             SfxAudioSource.PlayOneShot(explosionAudio);
-            RCCarNetwork.StopUseCarServerRpc(NetworkObjectId, transform.position);
+            StopUseCarServerRpc( transform.position);
             if (Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position,
                     transform.position) <= explosionRange)
             {
@@ -452,7 +437,7 @@ public class RCCarItem : PhysicsProp, IHittable
                     if (Vector3.Distance(car.transform.position,
                             transform.position) <= explosionRange)
                     {
-                        if(IsServer) RCCarNetwork.SetCarHealthServerRpc(car.NetworkObjectId, car.Health - 2);
+                        if(IsServer) SetCarHealthServerRpc(car.Health - 2);
                     }
                 }
             });
@@ -466,7 +451,6 @@ public class RCCarItem : PhysicsProp, IHittable
     {
         carBody.SetActive(false);
         yield return new WaitForSeconds(1f);
-        RCCarsPlugin.instance.RegistredCars.Remove(NetworkObjectId);
         if(IsServer) Destroy(gameObject);
     }
 
@@ -476,8 +460,106 @@ public class RCCarItem : PhysicsProp, IHittable
         if (hitTimer >= 0.2f)
         {
             hitTimer = 0;
-            RCCarNetwork.SetCarHealthServerRpc(NetworkObjectId, Health - force);
+            SetCarHealthServerRpc( Health - force);
         }
         return true;
+    }
+    
+    //RPCS
+    
+        
+    [ServerRpc(RequireOwnership = false)]
+    void CarHonkServerRpc()
+    {
+        CarHonkClientRpc();
+
+    }
+    
+    [ClientRpc]
+    void CarHonkClientRpc()
+    {
+        Honk();
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+     void StopUseCarServerRpc(Vector3 pos)
+    {
+        StopUseCarClientRpc( pos);
+    }
+    
+    [ClientRpc]
+     void StopUseCarClientRpc( Vector3 pos)
+    {
+        OnStopUsingCar(pos);
+        
+    }
+     
+    [ServerRpc(RequireOwnership = false)]
+     void UpdateDrivingSoundServerRpc( bool value)
+    {
+        UpdateDrivingSoundClientRpc( value);
+    }
+    
+    [ClientRpc]
+     void UpdateDrivingSoundClientRpc( bool value)
+    {
+        StopDrivingSoundClient(value);
+        
+    }
+     
+    [ServerRpc(RequireOwnership = false)]
+     void CarGrabItemServerRpc(ulong itemNetworkId)
+    {
+        CarGrabItemClientRpc( itemNetworkId);
+    }
+    
+    [ClientRpc]
+     void CarGrabItemClientRpc( ulong itemNetworkId)
+    {
+        var item = RCCarNetwork.GetItem(itemNetworkId);
+        if(item == null) return;
+        
+        GrabItem(item);
+        
+    }
+     
+    [ServerRpc(RequireOwnership = false)]
+     void CarDropItemServerRpc()
+    {
+        CarDropItemClientRpc();
+    }
+    
+    [ClientRpc]
+     void CarDropItemClientRpc()
+    {
+        DropHeldItem();
+        
+    }
+     
+         
+    [ServerRpc(RequireOwnership = false)]
+     void SyncCarPositionServerRpc(Vector3 pos)
+    {
+        SyncCarPositionClientRpc(pos);
+    }
+    
+    [ClientRpc]
+     void SyncCarPositionClientRpc( Vector3 pos)
+    {
+        SyncPositionClient(pos);
+        
+    }
+    
+    [ServerRpc]
+     void SetCarHealthServerRpc( int health)
+    {
+        SetCarHealthClientRpc( health);
+    }
+    
+    [ClientRpc]
+     void SetCarHealthClientRpc( int health)
+    {
+        SetNewHealth(health);
+        
     }
 }
