@@ -5,6 +5,7 @@ using System.Linq;
 using GameNetcodeStuff;
 using TMPro;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -66,8 +67,8 @@ public class RCCarItem : PhysicsProp, IHittable
     private float honkTimer;
     private float posSyncTimer;
     private float hitTimer;
-    
-    
+
+    private NetworkTransform networkTransform;
 
     public void RefreshPluginValues()
     {
@@ -86,6 +87,10 @@ public class RCCarItem : PhysicsProp, IHittable
         navMeshAgent.enabled = false;
         RefreshPluginValues();
         playerText.text = "";
+
+        networkTransform = GetComponent<NetworkTransform>();
+        
+        networkTransform.enabled = false;
 
     }
 
@@ -147,13 +152,16 @@ public class RCCarItem : PhysicsProp, IHittable
         CarLights(driving);
         
         rigidbody.useGravity = driving;
-        navMeshAgent.enabled = driving;
+        rigidbody.isKinematic = !driving;
+        navMeshAgent.enabled = false;
 
+        networkTransform.enabled = false;
         if (driving)
         {
-
+            
             if (playerIsLocal)
             {
+                //ChangeOwnershipOfProp(player.actualClientId);
                 EnableCamera(true);
                 player.DiscardHeldObject();
                 playerCamera = player.gameplayCamera;
@@ -182,9 +190,9 @@ public class RCCarItem : PhysicsProp, IHittable
             parentObject = null;
             playerText.text = "";
             reachedFloorTarget = false;
-            transform.localPosition = dropPos;
-            startFallingPosition = dropPos;
-            FallToGround();
+            //transform.localPosition = dropPos;
+            //startFallingPosition = dropPos;
+            //FallToGround();
             grabbable = true;
             
 
@@ -198,7 +206,7 @@ public class RCCarItem : PhysicsProp, IHittable
     public void OnStopUsingCar(Vector3 pos)
     {
         if(!playerDriving) return;
-        transform.position = pos;
+        //transform.position = pos;
         if(playerIsLocal) ChangePlayerControls(GameNetworkManager.Instance.localPlayerController, false);
         else ChangePlayerControls(playerDriving, false);
     }
@@ -290,7 +298,7 @@ public class RCCarItem : PhysicsProp, IHittable
         
         if (shouldBeDropPos)
         {
-            transform.position = dropPos;
+            //transform.position = dropPos;
             shouldBeDropPos = false;
         }
         
@@ -328,7 +336,11 @@ public class RCCarItem : PhysicsProp, IHittable
                     drivingAudioSource.Play();
                 }
                 
-                if(velocity.y > 0) navMeshAgent.Move(transform.forward * speed * Time.deltaTime);
+                if(velocity.y > 0)
+                {
+                    rigidbody.AddForce(transform.forward * speed * Time.deltaTime);
+                   // navMeshAgent.Move(transform.forward * speed * Time.deltaTime);
+                }
                 transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + velocity.x * rotationSpeed, 0);
             }
             else
@@ -345,6 +357,7 @@ public class RCCarItem : PhysicsProp, IHittable
         {
             base.LateUpdate();
         }
+        
         
         if (itemHeld != null)
         {
