@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Reflection;
 using BepInEx;
@@ -8,23 +7,21 @@ using LethalConfig;
 using LethalConfig.ConfigItems;
 using LethalConfig.ConfigItems.Options;
 using LethalLib.Modules;
-using RCCars.Scripts;
 using UnityEngine;
+
+using System;
 
 namespace RCCars
 {
-    [BepInDependency(StaticNetcodeLib.StaticNetcodeLib.Guid)]
     [BepInPlugin(GUID, NAME, VERSION)]
     public class RCCarsPlugin : BaseUnityPlugin
     {
         private const string GUID = "wexop.rc_cars";
         private const string NAME = "RCCars";
-        private const string VERSION = "1.0.8";
+        private const string VERSION = "2.0.0";
 
         public static RCCarsPlugin instance;
-
-        public Dictionary<ulong, RegistredCar> RegistredCars = new Dictionary<ulong, RegistredCar>();
-
+        
         public ConfigEntry<float> honkVolume;
         public ConfigEntry<float> engineVolume;
         public ConfigEntry<float> rotationSpeed;
@@ -50,6 +47,7 @@ namespace RCCars
             
             string assetDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "rccars");
             AssetBundle bundle = AssetBundle.LoadFromFile(assetDir);
+            NetcodePatcher();
             LoadConfigs();
             RegisterCar(bundle);
 
@@ -201,7 +199,7 @@ namespace RCCars
             
             syncInterval = Config.Bind(
                 "General", "syncInterval", 
-                0.35f, 
+                0.5f, 
                 "Cars sync interval between players. No need to restart the game :)"
             );
             CreateFloatConfig(syncInterval,0f, 2);
@@ -329,6 +327,35 @@ namespace RCCars
                 RequiresRestart = false
             });
             LethalConfigManager.AddConfigItem(exampleSlider);
+        }
+        
+        /// <summary>
+        ///     Slightly modified version of: https://github.com/EvaisaDev/UnityNetcodePatcher?tab=readme-ov-file#preparing-mods-for-patching
+        /// </summary>
+        private static void NetcodePatcher()
+        {
+            Type[] types;
+            try
+            {
+                types = Assembly.GetExecutingAssembly().GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                // This goofy try catch is needed here to be able to use soft dependencies in the future, though none are present at the moment.
+                types = e.Types.Where(type => type != null).ToArray();
+            }
+
+            foreach (Type type in types)
+            {
+                foreach (MethodInfo method in type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
+                {
+                    if (method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false).Length > 0)
+                    {
+                        // Do weird magic...
+                        _ = method.Invoke(null, null);
+                    }
+                }
+            }
         }
     }
 }

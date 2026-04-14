@@ -1,5 +1,10 @@
 # Changelog
 
+### v2.0.0
+
+- Remove StaticNetcodeLib dependency
+- Improve performance
+
 ### v1.0.6 => v1.0.8
 
 - Fix issues
